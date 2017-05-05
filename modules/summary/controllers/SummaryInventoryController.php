@@ -11,7 +11,6 @@ class SummaryInventoryController extends Controller
 	private $connection;
     private $tenant;
 	
-
 #  position manage Summary Low Stock Start
 
 
@@ -71,9 +70,8 @@ class SummaryInventoryController extends Controller
 		return $data;
 	}
 // call Method	
-	public function genInventoryStatus($tenant){
-		$this->tenant = $tenant;
-		$this->connection = Yii::$app->db;
+	public function genInventoryStatus(){
+		
 		$list = $this->selectProductStatus();
 		 $provider = new ArrayDataProvider([
 			'allModels' => $list,
@@ -90,6 +88,10 @@ class SummaryInventoryController extends Controller
 
     public function actionIndex()
     {
-		return $this->render('inventorystatus', ['model' => $this->genInventoryStatus(26)]);
+		$this->tenant = 26;
+		$this->connection = Yii::$app->db;
+		$listWarehouse = $this->callWarehouse();
+		print_r($listWarehouse);
+		return $this->render('inventorystatus', ['model' => $this->genInventoryStatus(), 'list' => $listWarehouse]);
     }
 }
