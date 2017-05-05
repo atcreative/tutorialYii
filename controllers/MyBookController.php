@@ -100,6 +100,10 @@ class MyBookController extends Controller{
 	function actionNewForm(){
 		return 'new form';
 	}
+
+	function actionUpdateForm(){
+		return 'update form';
+	}
 	
 }
 ?>
