@@ -96,6 +96,10 @@ class MyBookController extends Controller{
 		]);
 		return $this->render('list', ['dataProvider' => $dataProvider]);
 	}
+
+	function actionNewForm(){
+		return 'new form';
+	}
 	
 }
 ?>
