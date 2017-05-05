@@ -18,7 +18,7 @@
 	$genColumn[] = genArrayIndex($model, 'Reserved', 'reserved');
 	$genColumn[] = genArrayIndex($model, 'On Hand', 'onhand');
 	$genColumn[] = genArrayIndex($model, 'Price', 'price');
-	
+	$genColumn[] = genArrayIndex($model, 'cost' ,'cost');
 	echo GridView::widget([
 		'dataProvider' => $model,
 		'columns'=> $genColumn,
