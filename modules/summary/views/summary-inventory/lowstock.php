@@ -1,7 +1,35 @@
 <?php
  	use yii\grid\GridView;
+ 	use yii\helpers\Html;
+ 	function setOption($title){
+ 		return [
+ 		'class' => 'form-control',
+ 		'prompt' => $title
+ 		];
+ 	}
+ 	echo Html::beginForm('?r=summary/summary-inventory', 'get');
+ ?>
+ 	<div class="row form-group">
+ 		<div class="col-md-6 col-xs-6 col-lg-6"></div>
+	 	<div class="col-md-2 col-xs-2 col-lg-2">
+			 <?php
+			  echo	Html::dropDownList('warehouse', Yii::$app->request->get('warehouse'), $warehouseList, setOption('Select Warehouse'));
+			 ?>
+	 	</div>
+	 	<div class="col-md-2 col-xs-2 col-lg-2">
+			 <?php
+			  echo	Html::dropDownList('category', Yii::$app->request->get('category'), $categoryList, setOption('Select Category'));
+			 ?>
+	 	</div>
+	 	<div class="col-md-2 col-xs-2 col-lg-2">
+			 <?php echo Html::submitButton('Search', ['class' => 'btn btn-success']) ?>
+	 	</div>
+ 	</div>
+ 	<div class="row form-group">
+ <?php
+ 	echo Html::endForm();
 	echo GridView::widget([
-		'dataProvider' => $provider,
+		'dataProvider' => $model,
 		'columns' => [
 				[
 					'label' => Yii::t('app', 'sku'),
@@ -52,3 +80,4 @@
 			]
 		]);
 ?>
+</div>
