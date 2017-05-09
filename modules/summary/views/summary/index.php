@@ -16,32 +16,23 @@
 	 			'link' => 'summary-inventory/low-stock',
  			]
  		],
- 		'Seller' =>[
+ 		'Sell' =>[
  			[
-	 			'name' => 'Product best seller',
-	 			'detail' => 'product seller',
+	 			'name' => 'Product profit',
+	 			'detail' => 'product sell',
 	 			'link' => 'sell/best-seller',
  			],
  			[
-	 			'name' => 'Product profit',
-	 			'detail' => 'product profit',
-	 			'link' => '',
- 			],
- 			[
-	 			'name' => 'Sale summery',
-	 			'detail' => 'Sale summery',
-	 			'link' => '',
+	 			'name' => 'Product sale by month',
+	 			'detail' => 'Product sale by month',
+	 			'link' => 'sell/product-month',
  			],
  			[
 	 			'name' => 'Order status',
 	 			'detail' => 'Order status',
 	 			'link' => '',
  			],
- 			[
-	 			'name' => 'Product top sale',
-	 			'detail' => 'Order status',
-	 			'link' => '',
- 			],
+ 			
  		],
  		'Customer' =>[
  			[

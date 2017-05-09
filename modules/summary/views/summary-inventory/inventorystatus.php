@@ -3,7 +3,6 @@
  	use yii\Helper;
  	
 	function genArrayIndex($model, $label, $attribute){
-		$test = 'test';
 		return [
 					'label' => Yii::t('app', $label),
 					'format' => 'raw',
@@ -27,7 +26,6 @@
 						}else{
 							return '<span class="label label-primary" >'. Yii::t('app','In Stock') . '</span>';
 						}
-						
 					}
 	];
 	$genColumn[] = genArrayIndex($model, 'Quantity', 'quantity');

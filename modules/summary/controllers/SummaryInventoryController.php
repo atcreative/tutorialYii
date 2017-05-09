@@ -22,15 +22,15 @@ class SummaryInventoryController extends Controller
 		return $data;
 	}
 	
-#  position manage Summary Low Stock Start
+#  position manage  Low Stock Start
 	private function selectProductLowStock(){
 		$whereCategory = '';
 		$whereWarehouse = '';
 		if(!empty(Yii::$app->request->get('warehouse'))) $whereWarehouse = 'and warehouse_id = '.Yii::$app->request->get('warehouse');
 		if(!empty(Yii::$app->request->get('category'))) $whereCategory = 'and category_id = '.Yii::$app->request->get('category');
-		$data = $this->connection->createCommand('select id, sku, name, minimum_quantity, quantity  from product where minimum_quantity is not null '. $whereCategory.' and quantity <= minimum_quantity and product_type_id = 2 and  tenant_id = '. $this->tenant)->queryAll();
+		$data = $this->connection->createCommand('select id, sku, name, minimum_quantity, round(quantity) as quantity  from product where minimum_quantity is not null '. $whereCategory.' and quantity <= minimum_quantity and product_type_id = 2 and  tenant_id = '. $this->tenant)->queryAll();
 		foreach($data as $key => $value){	
-			$sqlBalance = 'select * from stock_balance where  product_id = '. $value['id'] .' '. $whereWarehouse;
+			$sqlBalance = 'select warehouse_id, round(quantity) as quantity from stock_balance where  product_id = '. $value['id'] .' '. $whereWarehouse;
 			$sqlBalance = $this->connection->createCommand($sqlBalance)->queryOne();
 			if(!empty($sqlBalance['warehouse_id'])){
 				$sqlBalance['warehouse_id'] = $this->connection->createCommand('select id,name from warehouse where id = '. $sqlBalance['warehouse_id'])->queryOne();
@@ -62,7 +62,7 @@ class SummaryInventoryController extends Controller
 	}
 
 
-#	positon manage Summary Low Stock End 
+#	positon manage Low Stock End 
 
 
 #	position manage inventory status Start
@@ -119,7 +119,7 @@ class SummaryInventoryController extends Controller
 #	position manage inventory status End
 
 	public function actionLowStock(){
-		return $this->genLowStock(26);
+		return $this->genLowStock(17);
 	}
 
 	public function actionInventoryStatus(){

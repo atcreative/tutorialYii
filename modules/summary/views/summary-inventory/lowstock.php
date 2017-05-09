@@ -55,7 +55,7 @@
 						$tag = '';
 						foreach( $model as $key => $value){
 							if(!empty($value['warehouse_id'])){
-							 	$tag .= $value['warehouse_id']['name']. '('. $value['quantity'].')'. '<br>';
+							 	$tag .= $value['warehouse_id']['name']. ' &nbsp;('. $value['quantity'].')'. '<br>';
 							}
 						}
 						return $tag;
