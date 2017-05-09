@@ -73,12 +73,17 @@ class SummaryInventoryController extends Controller
 	}
 
 	private function selectProductStatus(){
+		$perPage = 20;
+		$page = 1;
 		$whereCategory = '';
 		$whereWarehouse = '';
+		if(!empty(Yii::$app->request->get('page'))) $page = Yii::$app->request->get('page');
+		$page--;
 		if(!empty(Yii::$app->request->get('warehouse'))) $whereWarehouse = 'and warehouse_id = '.Yii::$app->request->get('warehouse');
 		if(!empty(Yii::$app->request->get('category'))) $whereCategory = 'and category_id = '.Yii::$app->request->get('category');
 		$warehouse = $this->getWarehouseInTenant();
-		$data = $this->connection->createCommand('select id, sku, name, price, cost, minimum_quantity, quantity from product where  product_type_id = 2 and status = 1 and tenant_id = '. $this->tenant. ' limit 100')->queryAll();
+		echo 'select id, sku, name, price, cost, minimum_quantity, quantity from product where  product_type_id = 2 and status = 1 and tenant_id = '. $this->tenant. ' limit '.($page * $perPage). ', '. (($page * $perPage) + $perPage);
+		$data = $this->connection->createCommand('select id, sku, name, price, cost, minimum_quantity, quantity from product where  product_type_id = 2 and status = 1 and tenant_id = '. $this->tenant. ' limit '.($page * $perPage). ', '. (($page * $perPage) + $perPage))->queryAll();
 		foreach($data as $key => $value){
 			foreach($warehouse as $index => $item){
 				$totalWarehouse = $this->connection->createCommand('select sum(quantity) as total from stock_balance where warehouse_id = '. $item['id']. ' and product_id = '.$value['id'])->queryOne();
@@ -96,12 +101,13 @@ class SummaryInventoryController extends Controller
 	public function genInventoryStatus($tenant){
 		$this->tenant = $tenant;
 		$this->connection = Yii::$app->db;
+		$perPage = Yii::$app->request->get('per-page');
 		$list = $this->selectProductStatus();
 		 $provider = new ArrayDataProvider([
 			'allModels' => $list,
 			'totalCount' => $this->selectCountProduct(),
 			'pagination' => [
-				'pageSize' => 10
+				'pageSize' => 20
 			],
 			'sort' => [
 				'attributes' => ['name', 'sku'],
@@ -111,8 +117,15 @@ class SummaryInventoryController extends Controller
 		return $this->render('inventorystatus', ['model' => $provider , 'list' => $listWarehouse]);
 	}
 #	position manage inventory status End
-    public function actionIndex(){
-		// return $this->genLowStock(17);
+
+	public function actionLowStock(){
+		return $this->genLowStock(26);
+	}
+
+	public function actionInventoryStatus(){
 		return $this->genInventoryStatus(17);
+	}
+    public function actionIndex(){
+		return $this->render('contentReport');
     }
 }

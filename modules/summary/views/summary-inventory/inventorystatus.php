@@ -1,6 +1,7 @@
 <?php
  	use yii\grid\GridView;
  	use yii\Helper;
+ 	
 	function genArrayIndex($model, $label, $attribute){
 		$test = 'test';
 		return [

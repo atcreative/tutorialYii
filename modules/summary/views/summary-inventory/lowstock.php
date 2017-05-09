@@ -7,7 +7,7 @@
  		'prompt' => $title
  		];
  	}
- 	echo Html::beginForm('?r=summary/summary-inventory', 'get');
+ 	echo Html::beginForm('?r=summary/summary-inventory/low-stock', 'get');
  ?>
  	<div class="row form-group">
  		<div class="col-md-6 col-xs-6 col-lg-6"></div>
