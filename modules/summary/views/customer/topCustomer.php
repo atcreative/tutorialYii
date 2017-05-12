@@ -1,18 +1,20 @@
 <?php
- 	use yii\grid\GridView;
+	use yii\grid\GridView;
  	use yii\helpers\Html;
  	use yii\helpers\Url;
  	use kartik\date\DatePicker;
- 	$fromDate = date('d-M-Y');
-	$toDate = date('d-M-Y');
-	if(Yii::$app->request->get('fromDate')) $fromDate = Yii::$app->request->get('fromDate');
- 	if(Yii::$app->request->get('toDate'))$toDate = Yii::$app->request->get('toDate');
- 	$this->title = Yii::t('app', 'Sunk Stock');
+ 	$this->title = Yii::t('app', 'Top Customer');
  	$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => Url::to(['summary/index'])];
  	$this->params['breadcrumbs'][] = $this->title;
- 	echo Html::beginForm(Url::to(['sunk-stock']), 'get');
+ 	echo Html::beginForm(Url::to(['top-customer']), 'get');
+
+ 	$fromDate = date('d-M-Y');
+ 	$toDate = date('d-M-Y');
+ 	if(Yii::$app->request->get('fromDate')) $fromDate = Yii::$app->request->get('fromDate');
+ 	if(Yii::$app->request->get('toDate'))$toDate = Yii::$app->request->get('toDate');
+
  ?>
- 	<div class="col-lg-3"></div>
+ 	<div class="col-lg-4"></div>
  	<div class="col-lg-1">from:</div>
  	<div class="col-lg-2">
  		<?php echo DatePicker::widget([
@@ -43,12 +45,13 @@
  	<div class="col-md-2 col-xs-2 col-lg-2">
 		 <?php echo Html::submitButton('Search', ['class' => 'btn btn-success']) ?>
  	</div>
- 	<div class="row"></div>
 <?php
 	echo Html::endForm();
-	echo GridView::widget([
+?>
+<div class="row"></div>
+<?php
+ 	echo GridView::widget([
 		'dataProvider' => $model,
+		'formatter' => ['class' => 'yii\i18n\Formatter','nullDisplay' => ''],
 	]);
-
-
 ?>

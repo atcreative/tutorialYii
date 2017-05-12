@@ -24,12 +24,7 @@
 				<td><?php echo $value['total'] ?></td>
 			<?php endforeach?>
 		</tr>
-		<tr>
-			<th>จำนวนรายการสั่งซื้อ</th>
-			<?php foreach($model as $key => $value):?>
-				<td><?php echo $value['quantity']?></td>
-			<?php endforeach?>
-		</tr>
+		
 		<tr>
 			<th>ราคาขายรวม</th>
 			<?php foreach($model as $key => $value):?>

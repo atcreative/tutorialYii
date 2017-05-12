@@ -103,6 +103,7 @@ class SummaryInventoryController extends Controller
 		$this->connection = Yii::$app->db;
 		$perPage = Yii::$app->request->get('per-page');
 		$list = $this->selectProductStatus();
+		
 		 $provider = new ArrayDataProvider([
 			'allModels' => $list,
 			'totalCount' => $this->selectCountProduct(),
@@ -118,8 +119,33 @@ class SummaryInventoryController extends Controller
 	}
 #	position manage inventory status End
 	// sunk stock start
-	public function selectSunkStock(){
-		
+	public function selectSunkStock($tenant){
+		$this->tenant = $tenant;
+		$this->connection = Yii::$app->db;
+		$fromDate = null;
+		$toDate = null;
+		$whereStock = null;
+		if(Yii::$app->request->get('fromDate')){
+			$fromDate = strtotime(Yii::$app->request->get('fromDate'));
+		}
+		if(Yii::$app->request->get('toDate')){
+			$toDate = strtotime(Yii::$app->request->get('toDate'));
+		}
+		if($fromDate && $toDate){
+			$whereStock = 'and `order`.dt_created BETWEEN ' . $fromDate. ' and '. $toDate . ' ';
+		}
+		$product = $this->connection->createCommand('select id, name, quantity, cost from product where tenant_id = '. $this->tenant. ' and status = 1 and quantity > 0 ')->queryAll();
+		foreach($product as $key => $value){
+			$checkOrder = $this->connection->createCommand('SELECT count(*) AS amount FROM `order` INNER JOIN order_detail ON `order`.id = order_detail.order_id WHERE `order`.status = 1 '. $whereStock.' and order_detail.product_id = '. $value['id'])->queryOne();
+			if($checkOrder['amount'] > 0) unset($product[$key]);
+		}
+		$provider = new ArrayDataProvider([
+			'allModels' => $product,
+			'pagination' => [
+				'pageSize' => 20
+			]
+		]);
+		return $this->render('sunkStock', ['model' => $provider]);
 	}
 	// sunk stock end 
 	public function actionLowStock(){
@@ -129,11 +155,9 @@ class SummaryInventoryController extends Controller
 	public function actionInventoryStatus(){
 		return $this->genInventoryStatus(17);
 	}
-    public function actionIndex(){
-		return $this->render('contentReport');
-    }
 
     public function actionSunkStock(){
-    	return $this->render('sunkStock');
+    	
+    	return $this->selectSunkStock(27);
     }
 }

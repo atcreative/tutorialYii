@@ -37,5 +37,6 @@
 	echo GridView::widget([
 		'dataProvider' => $model,
 		'columns'=> $genColumn,
+		'formatter' => ['class' => 'yii\i18n\Formatter','nullDisplay' => ''],
 	]);
 ?>
