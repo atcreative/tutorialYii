@@ -47,7 +47,7 @@
 			$provider = new ArrayDataProvider([
 				'allModels' => $list,
 			]);
-			return $this->render('bestSeller', ['model' => $provider, 'listCategory' => $listCategory]);
+			return $this->render('productProfit', ['model' => $provider, 'listCategory' => $listCategory]);
 		}
 
 //		end Product Profit
@@ -58,33 +58,98 @@
 			return $data['month'];
 		}
 
+		private function listYearInOrder(){
+			$sql = 'SELECT YEAR(FROM_UNIXTIME(dt_created)) as year FROM `order` where tenant_id = '. $this->tenant.' group by YEAR(FROM_UNIXTIME(dt_created))';
+			$data = $this->connection->createCommand($sql)->queryAll();
+			$data = ArrayHelper::map($data, 'year', 'year');
+			return $data;
+		}
+
 		private function selectProduct($month, $year){
-			$sql = 'SELECT id, name, sku FROM product WHERE status = 0 AND tenant_id = '. $this->tenant;
+			$month = [
+		 		'', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG'
+		 		, 'SEP', 'OCT', 'NOV', 'DEC'
+		 	];
+
+		 	$whereProduct = '';
+    		if((Yii::$app->request->get('nameProduct'))){
+    			$whereProduct  .= " and name like '%". Yii::$app->request->get('nameProduct'). "%' ";
+    		}
+    		if((Yii::$app->request->get('category'))){
+    			$whereProduct .= ' and category_id = '. Yii::$app->request->get('category');
+    		}
+
+
+			$sql = 'SELECT id, name, sku FROM product WHERE status = 1  ' . $whereProduct .' AND tenant_id = '. $this->tenant . ' ORDER BY sku ';
 			$data = $this->connection->createCommand($sql)->queryAll();
 			foreach($data as $key => $value){
-				for($i = 1 ; $i <= $month; $i++){
-					$sql = 'SELECT SUM(order_detail.id) AS quantity FROM order_detail INNER JOIN `order` ON `order`.id = order_detail.order_id where `order`.status = 1 and MONTH(FROM_UNIXTIME(`order`.dt_created)) =  '. $i .' and YEAR(FROM_UNIXTIME(`order`.dt_created)) =  '. $year .' and product_id = '. $value['id'];
+				$max = 0;
+				for($i = 1 ; $i <= 12; $i++){
+					
+					$sql = 'SELECT SUM(order_detail.quantity) AS quantity FROM order_detail INNER JOIN `order` ON `order`.id = order_detail.order_id where `order`.status = 1 and MONTH(FROM_UNIXTIME(`order`.dt_created)) =  '. $i .' and YEAR(FROM_UNIXTIME(`order`.dt_created)) =  '. $year .' and product_id = '. $value['id'];
 					$qty = $this->connection->createCommand($sql)->queryOne();
-					$data[$key][$i] = $qty['quantity'];
+					if($qty['quantity'] < 1) $data[$key][$month[$i]] = 0;
+					else {
+						$max += $qty['quantity'];
+						$data[$key][$month[$i]] = $qty['quantity'];
+					}
 				}
+				$data[$key]['total'] = $max;
 			}
-			print_r($data);
+			return $data;
 		}
 
 		private function productByMonth($tenant){
 			$this->tenant = $tenant;
 			$this->connection = Yii::$app->db;
-			$year = date('Y');
+			if((Yii::$app->request->get('year')))  $year = Yii::$app->request->get('year');
+    		else $year = date('Y');
 			$month = $this->lastOrderInMonth($year);
-			$this->selectProduct($month, $year);
+			$list = $this->selectProduct($month, $year);
+			$listCategory = $this->getMapCategory();
+			$listYear = $this->listYearInOrder();
+			$provider = new ArrayDataProvider([
+				'allModels' => $list,
+			]);
+			return $this->render('orderProductByMonth',[
+				'model' => $provider,
+				'month' => $month,
+				'year' => $year,
+				'listCategory' => $listCategory,
+				'listYear' => $listYear,
+			]);
 		} 
 //		end product month
-		public function actionBestSeller(){
+
+//		start order status
+		public function selectOrderStatus($tenant){
+			$this->tenant = $tenant;
+			$this->connection = Yii::$app->db;
+			$orderStatus = $this->connection->createCommand('select id, name from order_status')->queryAll();
+			foreach($orderStatus as  $key => $value){
+				$sumOrder = $this->connection->createCommand('select count(id)  as total from `order` where status = 1 and tenant_id = '. $this->tenant.' and order_status_id = '. $value['id'])->queryOne();
+				$sumQuantity = $this->connection->createCommand('select count(*) as total from order_detail inner join `order` on `order`.id = order_detail.order_id where `order`.status = 1 and `order`.tenant_id = '. $this->tenant.' and order_status_id = '. $value['id'])->queryOne();
+				$sumPrice = $this->connection->createCommand('select sum(total) as total from `order` where status = 1 and tenant_id = '. $this->tenant. ' and order_status_id = '. $value['id'])->queryOne();
+				$orderStatus[$key]['total'] = $sumOrder['total'];
+				$orderStatus[$key]['quantity'] = $sumQuantity['total'];
+				if($sumPrice['total'] < 1) $orderStatus[$key]['price'] = 0;
+				else $orderStatus[$key]['price'] = $sumPrice['total'];
+			}
+		
+			return $this->render('orderStatus',['model' => $orderStatus]);
+		}
+//		end order status
+
+		public function actionOrderStatus(){
+			return $this->selectOrderStatus(17);
+		}
+
+		public function actionProductProfit(){
 			return $this->bestSellProduct(17);
 		}
 
 		public function actionProductMonth(){
-			return $this->productByMonth(26);
+			return $this->productByMonth(17);
 		}
 	}
 ?>

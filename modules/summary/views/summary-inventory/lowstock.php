@@ -1,13 +1,17 @@
 <?php
  	use yii\grid\GridView;
  	use yii\helpers\Html;
+ 	use yii\helpers\Url;
  	function setOption($title){
  		return [
  		'class' => 'form-control',
  		'prompt' => $title
  		];
  	}
- 	echo Html::beginForm('?r=summary/summary-inventory/low-stock', 'get');
+ 	$this->title = Yii::t('app', 'Low Stock');
+ 	$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => Url::to(['summary/index'])];
+ 	$this->params['breadcrumbs'][] = $this->title;
+ 	echo Html::beginForm(Url::to(['low-stock']), 'get');
  ?>
  	<div class="row form-group">
  		<div class="col-md-6 col-xs-6 col-lg-6"></div>

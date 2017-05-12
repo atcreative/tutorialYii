@@ -1,7 +1,10 @@
 <?php
  	use yii\grid\GridView;
  	use yii\Helper;
- 	
+ 	use yii\helpers\Url;
+ 	$this->title = Yii::t('app', 'Inventory Status');
+ 	$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => Url::to(['summary/index'])];
+ 	$this->params['breadcrumbs'][] = $this->title;
 	function genArrayIndex($model, $label, $attribute){
 		return [
 					'label' => Yii::t('app', $label),

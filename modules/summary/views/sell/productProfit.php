@@ -2,7 +2,9 @@
  	use yii\grid\GridView;
  	use yii\helpers\Html;
  	use yii\helpers\Url;
-
+ 	$this->title = Yii::t('app', 'Product Profit');
+ 	$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => Url::to(['summary/index'])];
+ 	$this->params['breadcrumbs'][] = $this->title;
  	function setOption($title){
  		return [
 	 		'class' => 'form-control',

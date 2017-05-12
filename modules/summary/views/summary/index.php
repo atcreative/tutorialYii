@@ -2,7 +2,7 @@
  	use yii\grid\GridView;
  	use yii\helpers\Html;
  	use yii\helpers\Url;
-
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => Url::to(['index'])];
  	$arrReport = [
  		'Inventory' => [
  			[
@@ -14,13 +14,18 @@
 	 			'name' => 'Low Stock',
 	 			'detail' => 'Low Stock Detail',
 	 			'link' => 'summary-inventory/low-stock',
+ 			],
+ 			[
+ 				'name' => 'Suck Product', 
+ 				'detail' => 'Suck Product',
+ 				'link' => 'summary-inventory/sunk-stock'
  			]
  		],
  		'Sell' =>[
  			[
 	 			'name' => 'Product profit',
 	 			'detail' => 'product sell',
-	 			'link' => 'sell/best-seller',
+	 			'link' => 'sell/product-profit',
  			],
  			[
 	 			'name' => 'Product sale by month',
@@ -30,7 +35,7 @@
  			[
 	 			'name' => 'Order status',
 	 			'detail' => 'Order status',
-	 			'link' => '',
+	 			'link' => 'sell/order-status',
  			],
  			
  		],
