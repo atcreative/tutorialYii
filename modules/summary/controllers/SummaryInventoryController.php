@@ -117,7 +117,11 @@ class SummaryInventoryController extends Controller
 		return $this->render('inventorystatus', ['model' => $provider , 'list' => $listWarehouse]);
 	}
 #	position manage inventory status End
-
+	// sunk stock start
+	public function selectSunkStock(){
+		
+	}
+	// sunk stock end 
 	public function actionLowStock(){
 		return $this->genLowStock(17);
 	}
@@ -127,5 +131,9 @@ class SummaryInventoryController extends Controller
 	}
     public function actionIndex(){
 		return $this->render('contentReport');
+    }
+
+    public function actionSunkStock(){
+    	return $this->render('sunkStock');
     }
 }
