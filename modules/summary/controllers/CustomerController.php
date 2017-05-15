@@ -5,7 +5,6 @@
 	use yii\data\ArrayDataProvider;
 	use yii\helpers\ArrayHelper;
 	use yii\data\sort;
-
 	class CustomerController extends Controller{
 		private $connection;
 		private $tenant;
@@ -17,11 +16,11 @@
 			$fromDate = null;
 			$toDate = null;
 			if(Yii::$app->request->get('fromDate')){
-				$fromDate = strtotime(Yii::$app->request->get('fromDate'));
+				$fromDate = date('Y-m-d', strtotime(Yii::$app->request->get('fromDate')));
 
 			}
 			if(Yii::$app->request->get('toDate')){
-				$toDate = strtotime(Yii::$app->request->get('toDate'));
+				$toDate = date('Y-m-d', strtotime(Yii::$app->request->get('toDate')));
 			}
 			if($fromDate && $toDate){
 				$whereOrder = 'and dt_created BETWEEN ' . $fromDate. ' and '. $toDate . ' ';
@@ -64,23 +63,31 @@
 				$toDate = date('Y-n-d', strtotime(Yii::$app->request->get('toDate')));
 			}
 			if($fromDate && $toDate){
-				// $whereCustomer = "and created_at BETWEEN '2017-05-02' and '2017-05-02'";
-			}
-			$customer = $this->connection->createCommand('select name, surname from customer where tenant_id = '. $this->tenant .' and status = 1'. $whereCustomer)->queryAll();
 
-			$provider = new ArrayDataProvider([
-				'allModels' => $customer,
-			]);
-			return $this->render('newCustomer');
+				$whereCustomer = " and created_at between '". $fromDate."' and '". $toDate."'";
+				
+				$sql = 'select id, name, surname from customer where tenant_id = '. $this->tenant .' and status = 1'. $whereCustomer;
+				$customer = $this->connection->createCommand($sql)->queryAll();
+				foreach($customer as $key => $value){
+					$total = $this->connection->createCommand('select count(id) as count, sum(total) as total from `order` where order_status_id > 3 and   status = 1 and customer_id = '. $value['id'])->queryOne();
+					$customer[$key]['countOrder'] = $total['count'];
+					$customer[$key]['total'] = $total['total']; 
+				}
+				$provider = new ArrayDataProvider([
+					'allModels' => $customer,
+					'sort' => [
+					'attributes' => ['total', 'countOrder']],
+				]);
+				return $this->render('newCustomer', ['model' => $provider]);
+			}else return $this->render('newCustomer', ['model' => null]);
+			
 		}
 		//new customer end
-
 		public function actionTopCustomer(){
-			return $this->selectTopCustomer(3);
+			return $this->selectTopCustomer(17);
 		}
-
 		public function actionNewCustomer(){
-			return $this->newCUstomer(26);
+			return $this->newCustomer(17);
 		}
 	}
 ?>

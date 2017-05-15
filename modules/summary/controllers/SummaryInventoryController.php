@@ -68,34 +68,44 @@ class SummaryInventoryController extends Controller
 #	position manage inventory status Start
 
 	private function selectCountProduct(){
-		$data = $this->connection->createCommand('select count(*) as productAmount from product where product_type_id = 2 and status = 1 and tenant_id = '. $this->tenant)->queryOne();
+		$whereName = '';
+		if(!empty(Yii::$app->request->get('name'))) $whereName = " and ( name LIKE '%" . Yii::$app->request->get('name'). "%' or sku LIKE '%". Yii::$app->request->get('name')."%' ) ";
+		$data = $this->connection->createCommand('select count(*) as productAmount from product where product_type_id = 2 and status = 1 '. $whereName.' and  tenant_id = '. $this->tenant)->queryOne();
 		return $data['productAmount'];
 	}
 
 	private function selectProductStatus(){
 		$perPage = 20;
 		$page = 1;
-		$whereCategory = '';
+		$whereName = '';
 		$whereWarehouse = '';
+		$whereWarehouseInBalance = '';
+		if(!empty(Yii::$app->request->get('name'))) $whereName = " and (name LIKE '%" . Yii::$app->request->get('name'). "%' or sku LIKE '%". Yii::$app->request->get('name')."%' )";
 		if(!empty(Yii::$app->request->get('page'))) $page = Yii::$app->request->get('page');
 		$page--;
-		if(!empty(Yii::$app->request->get('warehouse'))) $whereWarehouse = 'and warehouse_id = '.Yii::$app->request->get('warehouse');
-		if(!empty(Yii::$app->request->get('category'))) $whereCategory = 'and category_id = '.Yii::$app->request->get('category');
-		$warehouse = $this->getWarehouseInTenant();
-		echo 'select id, sku, name, price, cost, minimum_quantity, quantity from product where  product_type_id = 2 and status = 1 and tenant_id = '. $this->tenant. ' limit '.($page * $perPage). ', '. (($page * $perPage) + $perPage);
-		$data = $this->connection->createCommand('select id, sku, name, price, cost, minimum_quantity, quantity from product where  product_type_id = 2 and status = 1 and tenant_id = '. $this->tenant. ' limit '.($page * $perPage). ', '. (($page * $perPage) + $perPage))->queryAll();
+		if(!empty(Yii::$app->request->get('warehouse'))){
+			$whereWarehouse = 'AND id = '.Yii::$app->request->get('warehouse');
+			$whereWarehouseInBalance = ' and warehouse_id = '. Yii::$app->request->get('warehouse');
+		}
+		if(!empty(Yii::$app->request->get('category'))) $whereCategory = ' and category_id = '.Yii::$app->request->get('category');
+		$warehouse = $this->getWarehouseInTenant($whereWarehouse);
+		$data = $this->connection->createCommand('select id, sku, name, price, cost, minimum_quantity, quantity from product where  product_type_id = 2 and status = 1  and tenant_id = '. $this->tenant. ' '.  $whereName.' limit '.($page * $perPage). ', '. (($page * $perPage) + $perPage))->queryAll();
 		foreach($data as $key => $value){
 			foreach($warehouse as $index => $item){
-				$totalWarehouse = $this->connection->createCommand('select sum(quantity) as total from stock_balance where warehouse_id = '. $item['id']. ' and product_id = '.$value['id'])->queryOne();
-				$data[$key][$item['name']] = $totalWarehouse['total'];	
+				$totalWarehouse = $this->connection->createCommand('select sum(quantity) as total from stock_balance where warehouse_id = '. $item['id'].' and product_id = '.$value['id'])->queryOne();
+				$data[$key][$item['name']] = round($totalWarehouse['total']);	
 			}
-			$totalProduct = $this->connection->createCommand('select sum(onhand) as onhand, sum(reserved) as reserved from stock_balance where product_id = '. $value['id'])->queryOne();
+			$totalProduct = $this->connection->createCommand('select sum(onhand) as onhand, sum(reserved) as reserved from stock_balance where product_id = '. $value['id'] . $whereWarehouseInBalance)->queryOne();
 			if($value['minimum_quantity'] > $value['quantity']) $data[$key]['status'] = 0;
 			else $data[$key]['status'] = 1;
 			$data[$key]['onhand'] = $totalProduct['onhand'];
 			$data[$key]['reserved'] = $totalProduct['reserved'];
 		}
-		return $data;
+		$arrData = [
+			'data' => $data,
+			'warehouseList' => $warehouse
+		];
+		return $arrData;
 	}
 // call Method	
 	public function genInventoryStatus($tenant){
@@ -103,9 +113,8 @@ class SummaryInventoryController extends Controller
 		$this->connection = Yii::$app->db;
 		$perPage = Yii::$app->request->get('per-page');
 		$list = $this->selectProductStatus();
-		
 		 $provider = new ArrayDataProvider([
-			'allModels' => $list,
+			'allModels' => $list['data'],
 			'totalCount' => $this->selectCountProduct(),
 			'pagination' => [
 				'pageSize' => 20
@@ -114,8 +123,9 @@ class SummaryInventoryController extends Controller
 				'attributes' => ['name', 'sku'],
 			],
 		]);
-		$listWarehouse = $this->getWarehouseInTenant();
-		return $this->render('inventorystatus', ['model' => $provider , 'list' => $listWarehouse]);
+		$selectWarehouse = $this->getWarehouseInTenant();
+		$listWarehouse = ArrayHelper::map($selectWarehouse, 'id', 'name');
+		return $this->render('inventorystatus', ['model' => $provider , 'list' => $list['warehouseList'], 'listWarehouse' => $listWarehouse]);
 	}
 #	position manage inventory status End
 	// sunk stock start
@@ -132,20 +142,21 @@ class SummaryInventoryController extends Controller
 			$toDate = strtotime(Yii::$app->request->get('toDate'));
 		}
 		if($fromDate && $toDate){
-			$whereStock = 'and `order`.dt_created BETWEEN ' . $fromDate. ' and '. $toDate . ' ';
-		}
-		$product = $this->connection->createCommand('select id, name, quantity, cost from product where tenant_id = '. $this->tenant. ' and status = 1 and quantity > 0 ')->queryAll();
-		foreach($product as $key => $value){
-			$checkOrder = $this->connection->createCommand('SELECT count(*) AS amount FROM `order` INNER JOIN order_detail ON `order`.id = order_detail.order_id WHERE `order`.status = 1 '. $whereStock.' and order_detail.product_id = '. $value['id'])->queryOne();
-			if($checkOrder['amount'] > 0) unset($product[$key]);
-		}
-		$provider = new ArrayDataProvider([
-			'allModels' => $product,
-			'pagination' => [
-				'pageSize' => 20
-			]
-		]);
-		return $this->render('sunkStock', ['model' => $provider]);
+			$whereStock = 'and `order`.dt_created > '. $fromDate .' and `order`.dt_created < '. $toDate;
+			$product = $this->connection->createCommand('select id, name, quantity, cost from product where tenant_id = '. $this->tenant. ' and status = 1 and quantity > 0 ')->queryAll();
+			
+			foreach($product as $key => $value){
+				$checkOrder = $this->connection->createCommand('SELECT count(*) AS amount FROM `order` INNER JOIN order_detail ON `order`.id = order_detail.order_id WHERE `order`.status = 1 '. $whereStock.' and order_detail.product_id = '. $value['id'])->queryOne();
+				if($checkOrder['amount'] > 0) unset($product[$key]);
+			}
+			$provider = new ArrayDataProvider([
+				'allModels' => $product,
+				'pagination' => [
+					'pageSize' => 20
+				]
+			]);
+			return $this->render('sunkStock', ['model' => $provider]);
+		}else return $this->render('sunkStock');
 	}
 	// sunk stock end 
 	public function actionLowStock(){
@@ -157,7 +168,8 @@ class SummaryInventoryController extends Controller
 	}
 
     public function actionSunkStock(){
-    	
-    	return $this->selectSunkStock(27);
+    	return $this->selectSunkStock(17);
     }
+
+    
 }

@@ -8,11 +8,19 @@
  	$this->params['breadcrumbs'][] = $this->title;
  	echo Html::beginForm(Url::to(['new-customer']), 'get');
 
- 	$fromDate = date('d-M-Y');
- 	$toDate = date('d-M-Y');
+ 	$fromDate = '';
+ 	$toDate = '';
  	if(Yii::$app->request->get('fromDate')) $fromDate = Yii::$app->request->get('fromDate');
  	if(Yii::$app->request->get('toDate'))$toDate = Yii::$app->request->get('toDate');
-
+ 	function genArrayIndex($model, $label, $attribute){
+		return [
+					'label' => Yii::t('app', $label),
+					'format' => 'raw',
+					'attribute' => $attribute,
+					'value' => $attribute,
+		          
+		];
+	}
  ?>
  	<div class="col-lg-4"></div>
  	<div class="col-lg-1">from:</div>
@@ -47,4 +55,15 @@
  	</div>
 <?php
 	echo Html::endForm();
+	if(strlen($fromDate) > 0 && strlen($toDate) > 0){
+		$genColumns[] = genArrayIndex($model, 'Name', 'name');
+		$genColumns[] = genArrayIndex($model, 'Surname', 'surname');
+		$genColumns[] = genArrayIndex($model, 'Count order', 'countOrder');
+		$genColumns[] = genArrayIndex($model, 'Total', 'total');
+		echo GridView::widget([
+			'dataProvider' => $model,
+			'columns' => $genColumns,
+			'formatter' => ['class' => 'yii\i18n\Formatter','nullDisplay' => ''],
+		]);
+	}
 ?>

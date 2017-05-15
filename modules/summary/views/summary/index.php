@@ -55,7 +55,7 @@ $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => 
  			[
 	 			'name' => 'Top bank',
 	 			'detail' => 'Top bank',
-	 			'link' => '',
+	 			'link' => 'sell/pay-bank',
  			],
  			
  		]

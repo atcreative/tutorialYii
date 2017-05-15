@@ -126,6 +126,8 @@
 			$this->tenant = $tenant;
 			$this->connection = Yii::$app->db;
 			$orderStatus = $this->connection->createCommand('select id, name from order_status')->queryAll();
+			unset($orderStatus[1]);
+			unset($orderStatus[count($orderStatus)]);
 			foreach($orderStatus as  $key => $value){
 				$sumOrder = $this->connection->createCommand('select count(id)  as total from `order` where status = 1 and tenant_id = '. $this->tenant.' and order_status_id = '. $value['id'])->queryOne();
 				$sumQuantity = $this->connection->createCommand('select count(*) as total from order_detail inner join `order` on `order`.id = order_detail.order_id where `order`.status = 1 and `order`.tenant_id = '. $this->tenant.' and order_status_id = '. $value['id'])->queryOne();
@@ -139,6 +141,27 @@
 			return $this->render('orderStatus',['model' => $orderStatus]);
 		}
 //		end order status
+//		start Top Bank
+		public function payBank($tenant){
+			$this->tenant = $tenant;
+			$this->connection = Yii::$app->db;
+			$bank = $this->connection->createCommand('select id, bank_name_en, bank_name_th from bank_account')->queryAll();
+			foreach($bank as $key => $value){
+				$listBank = $this->connection->createCommand('select * from tenant_bank_account where tenant_id = '. $this->tenant. ' and status = 1 and bank_account_id = '. $value['id'])->queryAll();
+				if(count($listBank) > 0) {
+					foreach($listBank as $index => $item){
+						$totalPayMent = $this->connection->createCommand('SELECT sum(amount) AS total FROM payment WHERE tenant_bank_account_id = '. $item['id'])->queryOne();
+						$listBank[$index]['total'] = $totalPayMent['total'];
+					}
+					$bank[$key]['list'] = $listBank;
+				}else unset($bank[$key]);
+			}
+			// $provider = new ArrayDataProvider([
+			// 	'allModels' => $bank,
+			// ]);
+			return $this->render('payBank', ['model' => $bank]);
+		}
+//		end Top Bank
 
 		public function actionOrderStatus(){
 			return $this->selectOrderStatus(17);
@@ -150,6 +173,10 @@
 
 		public function actionProductMonth(){
 			return $this->productByMonth(17);
+		}
+
+		public function actionPayBank(){
+			return $this->payBank(17);
 		}
 	}
 ?>
