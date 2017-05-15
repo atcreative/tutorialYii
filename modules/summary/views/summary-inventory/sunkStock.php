@@ -3,8 +3,8 @@
  	use yii\helpers\Html;
  	use yii\helpers\Url;
  	use kartik\date\DatePicker;
- 	$fromDate = date('d-M-Y');
-	$toDate = date('d-M-Y');
+ 	$fromDate = '';
+	$toDate = '';
 	if(Yii::$app->request->get('fromDate')) $fromDate = Yii::$app->request->get('fromDate');
  	if(Yii::$app->request->get('toDate'))$toDate = Yii::$app->request->get('toDate');
  	$this->title = Yii::t('app', 'Sunk Stock');
@@ -46,9 +46,10 @@
  	<div class="row"></div>
 <?php
 	echo Html::endForm();
-	echo GridView::widget([
-		'dataProvider' => $model,
-	]);
-
+	if(strlen($fromDate) > 0 && strlen($toDate)){
+		echo GridView::widget([
+			'dataProvider' => $model,
+		]);
+	}
 
 ?>

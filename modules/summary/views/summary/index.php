@@ -22,6 +22,12 @@ $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => 
  			]
  		],
  		'Sell' =>[
+
+ 			[
+ 				'name' => 'Top Order',
+ 				'detail' => 'Top Order',
+ 				'link' => 'sell/top-order',
+ 			],
  			[
 	 			'name' => 'Product profit',
 	 			'detail' => 'product sell',

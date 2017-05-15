@@ -163,6 +163,29 @@
 		}
 //		end Top Bank
 
+//		start top Order
+		private function topOrder($tenant){
+			$this->tenant = $tenant;
+			$this->connection = Yii::$app->db;
+			$where = '';
+			if(Yii::$app->request->get('minTotal') && Yii::$app->request->get('maxTotal')){
+				$where .= ' and total >= '. Yii::$app->request->get('minTotal'); 
+				$where .= ' and total <= '. Yii::$app->request->get('maxTotal');
+			}
+
+			if(Yii::$app->request->get('fromDate') && Yii::$app->request->get('toDate')){ 
+				$fromDate =  strtotime(Yii::$app->request->get('fromDate'));
+				$toDate = strtotime(Yii::$app->request->get('toDate'));
+				$where .= ' and `order`.dt_created BETWEEN ' . $fromDate. ' and '. $toDate;
+			}
+			$selectTopOrder = $this->connection->createCommand('SELECT customer.name, order_number,  total FROM `order` INNER JOIN customer ON customer.id = `order`.customer_id WHERE  `order`.tenant_id = '. $this->tenant. ' and order_status_id > 3 '. $where.' order by total DESC')->queryAll();
+			$provider = new ArrayDataProvider([
+				'allModels' => $selectTopOrder,
+			]);
+			return $this->render('topOrder', ['model' => $provider]);
+		}
+//		end top Order
+
 		public function actionOrderStatus(){
 			return $this->selectOrderStatus(17);
 		}
@@ -177,6 +200,10 @@
 
 		public function actionPayBank(){
 			return $this->payBank(17);
+		}
+
+		public function actionTopOrder(){
+			return $this->topOrder(27);
 		}
 	}
 ?>
