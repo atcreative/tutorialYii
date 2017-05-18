@@ -48,6 +48,9 @@ $config = [
         */
     ],
 	'modules' => [
+        'admin' => [
+            'class' => 'app\modules\admin\AdminModule',
+        ],
         'guestbook' => [
             'class' => 'app\modules\guestbook\GuestBookModule',
         ],

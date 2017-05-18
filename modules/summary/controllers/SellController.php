@@ -178,7 +178,7 @@
 				$toDate = strtotime(Yii::$app->request->get('toDate'));
 				$where .= ' and `order`.dt_created BETWEEN ' . $fromDate. ' and '. $toDate;
 			}
-			$selectTopOrder = $this->connection->createCommand('SELECT customer.name, order_number,  total FROM `order` INNER JOIN customer ON customer.id = `order`.customer_id WHERE  `order`.tenant_id = '. $this->tenant. ' and order_status_id > 3 '. $where.' order by total DESC')->queryAll();
+			$selectTopOrder = $this->connection->createCommand('SELECT customer.name, order_number, channel.name as channel,  total FROM `order` INNER JOIN customer ON customer.id = `order`.customer_id INNER JOIN channel on channel.id = `order`.channel_id WHERE  `order`.tenant_id = '. $this->tenant. ' and order_status_id > 3 '. $where.' order by total DESC')->queryAll();
 			$provider = new ArrayDataProvider([
 				'allModels' => $selectTopOrder,
 			]);
