@@ -186,6 +186,17 @@
 		}
 //		end top Order
 
+//		start shipment
+		private function selectShipment($tenant){
+			$this->tenant = $tenant;
+			$this->connection = Yii::$app->db;
+			return $this->render('shipment');
+		}
+//		end shipment
+		public function actionShipment(){
+			 return $this->selectShipment(25);
+		}
+
 		public function actionOrderStatus(){
 			return $this->selectOrderStatus(17);
 		}
