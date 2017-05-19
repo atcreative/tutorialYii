@@ -148,7 +148,26 @@ class AdminSummaryController extends Controller
    	}
 
    	public function actionSummaryShipment(){
-   		$this->selectCountGroupDataAll();
+   		$this->connection = Yii::$app->db;
+   		$where = '';
+   		if(Yii::$app->request->get('year')){
+   			$where .= ' and year(FROM_UNIXTIME(dt_created)) = '. Yii::$app->request->get('year');
+   		}
+   		$shipper = $this->connection->createCommand('SELECT id, name FROM shipper WHERE status = 1')->queryAll();
+   		$month  = [];
+   		foreach($shipper as $key => $value){
+   			$total = 0 ;
+   			for($i = 1 ; $i <= 12 ; $i++){
+   				$dataCount = $this->connection->createCommand('SELECT COUNT(*) AS amount  FROM `order` INNER JOIN shipping_price on `order`.shipping_price_id = shipping_price.id  where `order`.status = 1 and MONTH(FROM_UNIXTIME(dt_created)) = '. $i.' and shipping_price.shipper_id = '. $value['id'].  $where)->queryOne();
+   				$shipper[$key]['month'][$i] = $dataCount['amount'];
+   				$total += $dataCount['amount'];
+   			}
+   			$shipper[$key]['totalAmount'] = $total;
+   		}
+   		$shipper['shipper'] = $shipper;
+		$shipper['groupYear'] = $this->groupDateInTable('`order`', 'dt_created');
+   		return $this->render('summary-shipment', $shipper);
+   		
    	}
 
    	public function actionSummaryUser(){

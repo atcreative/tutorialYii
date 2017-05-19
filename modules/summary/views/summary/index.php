@@ -64,7 +64,14 @@ $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Summary'), 'url' => 
 	 			'link' => 'sell/pay-bank',
  			],
  			
- 		]
+ 		],
+ 		// 'Shipment' => [
+ 		// 	[
+ 		// 		'name' => 'Summary Shipment',
+ 		// 		'detail' => 'Summary Shipment',
+ 		// 		'link' => 'sell/shipment'
+ 		// 	],
+ 		// ]
  	];
  ?>
 <div class="col-lg-12">
