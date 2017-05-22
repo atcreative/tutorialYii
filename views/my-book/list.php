@@ -23,7 +23,7 @@ JS;
 $this->registerJS($js, VIEW::POS_END);
 echo Html::textInput('my_time', '', ['class' => 'form-control', 'id' => 'my-time', 'placeholder' => 'myTime']);
 echo GridView::widget([
-	'dataProvider' => $dataProvider,
+	'dataProveder' => $dataProvider,
 	'columns' =>[
 		[
 			'label' => 'Category', 
